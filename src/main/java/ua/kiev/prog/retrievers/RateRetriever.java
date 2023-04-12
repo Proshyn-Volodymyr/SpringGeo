@@ -1,20 +1,32 @@
 package ua.kiev.prog.retrievers;
 
+import org.apache.catalina.connector.Request;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import ua.kiev.prog.json.Rate;
 
+import java.net.URI;
+
 @Component
 public class RateRetriever {
 
-    private static final String URL = "http://data.fixer.io/api/latest?access_key=a7f108773f94f0de03695781411ce94b";
+    private static final String URL = "https://api.apilayer.com/fixer/latest?symbols=uah&base=eur";
+    private String key = "mZHFHzYRo0Gg7Grv1siHGFBiP3UBjDTB";
 
-    @Cacheable("rates")
+    @Cacheable("rates") // Redis
     public Rate getRate() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("apikey", key);
+        HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<Rate> response = restTemplate.getForEntity(URL, Rate.class);
+        ResponseEntity<Rate> response = restTemplate.exchange(
+                URL,
+                HttpMethod.GET,
+                entity,
+                Rate.class
+        );
         return response.getBody();
     }
 }
